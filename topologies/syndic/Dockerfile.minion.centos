@@ -1,0 +1,11 @@
+FROM syndic-topology-base:latest
+ARG minion_id
+ARG salt_master_ip
+
+RUN systemctl enable salt-minion
+
+RUN mkdir -p /etc/salt/minion.d && echo 'open_mode: true' > /etc/salt/minion.d/open-mode.conf && \
+  echo "id: $minion_id" > /etc/salt/minion.d/id.conf && \
+  echo "master: $salt_master_ip" > /etc/salt/minion.d/master.conf
+
+CMD ["/sbin/init"]

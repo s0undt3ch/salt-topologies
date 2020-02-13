@@ -1,0 +1,11 @@
+FROM syndic-topology-base:latest
+ARG master_id
+
+RUN systemctl enable salt-master
+
+RUN mkdir -p /etc/salt/master.d && echo 'open_mode: true' > /etc/salt/master.d/open-mode.conf
+RUN echo "order_masters: true" >> /etc/salt/master.d/mom.conf && \
+  echo "id: $master_id" >> /etc/salt/master.d/mom.conf && \
+  echo "master_id: $master_id" >> /etc/salt/master.d/mom.conf
+
+CMD ["/sbin/init"]

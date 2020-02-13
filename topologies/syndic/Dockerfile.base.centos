@@ -1,0 +1,22 @@
+FROM centos:7
+
+RUN yum -y install deltarpm && \
+    yum -y update && \
+    yum -y install epel-release && \
+    yum -y upgrade
+RUN yum -y install curl locales sed vim-minimal systemd \
+    systemd-sysv tmux sudo tree net-tools bind-utils lsof nmap which \
+    binutils multitail
+ENV LANG=en_US.UTF-8
+ENV LANGUAGE=en_US.UTF-8
+RUN ln -sf /etc/localtime /usr/share/zoneinfo/America/Denver
+RUN systemctl mask getty@tty1
+
+RUN curl -L https://bootstrap.saltstack.com | sudo sh -s -- -XMS stable latest
+
+RUN systemctl disable salt-master salt-minion salt-syndic
+
+RUN echo "log_level_logfile: debug" > /etc/salt/master.d/logging.conf && \
+  echo "log_level_logfile: debug" > /etc/salt/minion.d/logging.conf
+
+CMD ["/sbin/init"]

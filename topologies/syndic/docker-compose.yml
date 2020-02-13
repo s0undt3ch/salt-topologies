@@ -1,0 +1,98 @@
+version: '3.4'
+
+services:
+  mom:
+    image: mom:latest
+    networks:
+      mom-network:
+        aliases:
+          - mom
+    build:
+      context: .
+      dockerfile: Dockerfile.mom.centos
+      args:
+        master_id: mom
+      cache_from:
+        - syndic-topology-base
+    container_name: mom
+    command: /usr/lib/systemd/systemd
+    tmpfs:
+      - /tmp
+      - /run
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+
+  minion-1:
+    image: minion-1:latest
+    networks:
+      mom-network:
+        aliases:
+          - minion-1
+    build:
+      context: .
+      dockerfile: Dockerfile.minion.centos
+      args:
+        minion_id: minion-1
+        salt_master_ip: mom
+      cache_from:
+        - syndic-topology-base
+    container_name: minion-1
+    command: /usr/lib/systemd/systemd
+    tmpfs:
+      - /tmp
+      - /run
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+
+  syndic-master:
+    image: syndic-master:latest
+    networks:
+      mom-network:
+        aliases:
+          - syndic-master
+    build:
+      context: .
+      dockerfile: Dockerfile.syndic.centos
+      args:
+        master_id: syndic-master
+        salt_master_ip: mom
+      cache_from:
+        - syndic-topology-base
+    container_name: syndic-master
+    command: /usr/lib/systemd/systemd
+    tmpfs:
+      - /tmp
+      - /run
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+
+  minion-2:
+    image: minion-2:latest
+    networks:
+      mom-network:
+        aliases:
+          - minion-2
+    build:
+      context: .
+      dockerfile: Dockerfile.minion.centos
+      args:
+        minion_id: minion-2
+        salt_master_ip: syndic-master
+      cache_from:
+        - syndic-topology-base
+    container_name: minion-2
+    command: /usr/lib/systemd/systemd
+    tmpfs:
+      - /tmp
+      - /run
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+
+
+networks:
+  mom-network:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.100.0.0/24
